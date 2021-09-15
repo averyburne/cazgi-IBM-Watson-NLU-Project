@@ -12,11 +12,11 @@ app.use(cors_app());
 /*Uncomment the following lines to loan the environment 
 variables that you set up in the .env file*/
 
-// const dotenv = require('dotenv');
-// dotenv.config();
+const dotenv = require('dotenv');
+dotenv.config();
 
-// const api_key = process.env.API_KEY;
-// const api_url = process.env.API_URL;
+const api_key = process.env.API_KEY;
+const api_url = process.env.API_URL;
 
 function getNLUInstance() {
     let api_key = process.env.API_KEY
@@ -43,31 +43,31 @@ app.get("/",(req,res)=>{
 
 //The endpoint for the webserver ending with /url/emotion
 app.get("/url/emotion", (req,res) => {
-    // //Extract the url passed from the client through the request object
-    // let urlToAnalyze = req.query.url
-    // const analyzeParams = 
-    //     {
-    //         "url": urlToAnalyze,
-    //         "features": {
-    //             "keywords": {
-    //                             "emotion": true,
-    //                             "limit": 1
-    //                         }
-    //         }
-    //     }
+    //Extract the url passed from the client through the request object
+    let urlToAnalyze = req.query.url
+    const analyzeParams = 
+        {
+            "url": urlToAnalyze,
+            "features": {
+                "keywords": {
+                                "emotion": true,
+                                "limit": 1
+                            }
+            }
+        }
      
-    //  const naturalLanguageUnderstanding = getNLUInstance();
+     const naturalLanguageUnderstanding = getNLUInstance();
      
-    //  naturalLanguageUnderstanding.analyze(analyzeParams)
-    //  .then(analysisResults => {
-    //     //Print the JSON returned by NLU instance as a formatted string
-    //     console.log(JSON.stringify(analysisResults.result.keywords[0].emotion,null,2));
-    //     //Please refer to the image to see the order of retrieval
-    //     return res.send(analysisResults.result.keywords[0].emotion,null,2);
-    //  })
-    //  .catch(err => {
-    //  return res.send("Could not do desired operation "+err);
-    //  });
+     naturalLanguageUnderstanding.analyze(analyzeParams)
+     .then(analysisResults => {
+        //Print the JSON returned by NLU instance as a formatted string
+        console.log(JSON.stringify(analysisResults.result.keywords[0].emotion,null,2));
+        //Please refer to the image to see the order of retrieval
+        return res.send(analysisResults.result.keywords[0].emotion,null,2);
+     })
+     .catch(err => {
+     return res.send("Could not do desired operation " + err);
+     });
 });
 
 //The endpoint for the webserver ending with /url/sentiment
@@ -77,7 +77,24 @@ app.get("/url/sentiment", (req,res) => {
 
 //The endpoint for the webserver ending with /text/emotion
 app.get("/text/emotion", (req,res) => {
-    return res.send({"happy":"10","sad":"90"});
+    const analyzeParams = {
+        text: req.query.text,
+        features: {
+            emotion: {}
+        }
+    };
+    let response = getNLUInstance().analyze(analyzeParams)
+        .then(analysisResults => {
+            let resultAnalysis = JSON.stringify(
+                analysisResults.result.emotion.document.emotion
+                , null, 2);
+            return res.send(resultAnalysis);
+        })
+        .catch(err => {
+            console.log('error:', err);
+            return res.send(err);
+        });
+
 });
 
 app.get("/text/sentiment", (req,res) => {
